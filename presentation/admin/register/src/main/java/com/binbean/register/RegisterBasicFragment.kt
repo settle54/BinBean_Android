@@ -15,26 +15,30 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.binbean.admin.dto.CafeRegisterRequest
+import com.binbean.admin.model.PhotoItem
+import com.binbean.domain.cafe.CafeDetail
 import com.binbean.register.databinding.FragmentRegisterBasicBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class RegisterBasicFragment : Fragment() {
     private lateinit var binding: FragmentRegisterBasicBinding
-    private val photoList = mutableListOf<Uri>()
     private lateinit var adapter: PhotoAdapter
-    private val viewModel: CafeRegisterViewModel by activityViewModels()
+    private val registerViewModel: CafeRegisterViewModel by activityViewModels()
+    private val modifyViewModel: CafeModifyViewModel by activityViewModels()
     private lateinit var baseRequest: CafeRegisterRequest
 
     // 갤러리를 여는 함수
     private val getImage =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let {
-                photoList.add(it)
-                adapter.notifyItemInserted(photoList.size - 1)
-                updatePhotoRcvVisibility()
+                val currentPhotos = registerViewModel.imageItems.value.orEmpty().toMutableList()
+                currentPhotos.add(PhotoItem.Local(it))
+                Log.d(TAG, currentPhotos.joinToString(","))
+                registerViewModel.setImageList(currentPhotos)
             }
         }
 
@@ -49,9 +53,63 @@ class RegisterBasicFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val args: RegisterBasicFragmentArgs by navArgs()
+        val isRegistered = args.isRegistered
+
+        if (isRegistered) {
+            binding.title.setText(R.string.modify_cafe_basic_info)
+            binding.modifiyTool.visibility = View.VISIBLE
+            binding.registerButton.visibility = View.GONE
+            setCafeDetailInfo()
+        }
+
         radioButtonControl()
         initPhotoRcv()
         initClickListener()
+        observeCafeInfoImg()
+    }
+
+    /**
+     * 읽어 들여온 카페 상세 정보를 뷰에 바인드하는 함수
+     */
+    private fun setCafeDetailInfo() {
+        val cafe = modifyViewModel.getCafeDetail()
+        cafe?.let {
+            binding.tradeWindow.setText(cafe.cafeName)
+            binding.addressWindow.setText(cafe.cafeAddress)
+            binding.phoneWindow.setText(cafe.cafePhone)
+            binding.editAddiInfo.setText(cafe.cafeDescription)
+            binding.radioWifi.checkRadioByTag(cafe.wifiAvailable)
+            binding.radioCharging.checkRadioByTag(cafe.chargerAvailable)
+            binding.radioKids.checkRadioByTag(cafe.kidsAvailable)
+            binding.radioPets.checkRadioByTag(cafe.petAvailable)
+            setCafeInfoImg(it)
+        }
+    }
+
+    private fun setCafeInfoImg(cafe: CafeDetail) {
+        val remotePhotos = cafe.cafeImgUrl.map { PhotoItem.Remote(it.url) }
+        registerViewModel.setImageList(remotePhotos)
+    }
+
+    /**
+     * cafe 값에 따라 라디오버튼 체크하는 함수
+     */
+    private fun RadioGroup.checkRadioByTag(value: Int?) {
+        if (value == null) {
+            clearCheck()
+            return
+        }
+
+        for (i in 0 until 2) {
+            val btn = getChildAt(i) as? RadioButton ?: continue
+            if (btn.tag?.toString()?.toIntOrNull() == value) {
+                check(btn.id)
+                return
+            }
+        }
+
+        clearCheck()
     }
 
     /**
@@ -61,8 +119,8 @@ class RegisterBasicFragment : Fragment() {
         baseRequest = CafeRegisterRequest(
             cafeName = binding.tradeWindow.text.toString(),
             cafeAddress = binding.addressWindow.text.toString(),
-            latitude = 37.0,
-            longitude = 127.0,
+            latitude = 37.874715,
+            longitude = 127.744192,
             cafePhone = binding.phoneWindow.text.toString(),
             wifiAvailable = binding.radioWifi.getSelectedTagValueAsInt(),
             chargerAvailable = binding.radioCharging.getSelectedTagValueAsInt(),
@@ -75,7 +133,7 @@ class RegisterBasicFragment : Fragment() {
     /**
      * 라디오 그륩의 선택된 값의 태그를 읽어오는 함수 (불가능: 0, 가능: 1)
      */
-    fun RadioGroup.getSelectedTagValueAsInt(): Int {
+    private fun RadioGroup.getSelectedTagValueAsInt(): Int {
         return findViewById<RadioButton>(checkedRadioButtonId).tag.toString().toInt()
     }
 
@@ -90,9 +148,18 @@ class RegisterBasicFragment : Fragment() {
         binding.registerButton.setOnClickListener {
             makeBasicRequest()
             Log.d(TAG, baseRequest.toString())
-            viewModel.setRequest(baseRequest)
-            viewModel.setImageUris(photoList)
-            val action = RegisterBasicFragmentDirections.actionRegistrationToHours()
+            registerViewModel.setRequest(baseRequest)
+            val action = RegisterBasicFragmentDirections.actionRegistrationToHours(false)
+            findNavController().navigate(action)
+        }
+
+        binding.modifyComplete.setOnClickListener {
+            val action = RegisterBasicFragmentDirections.actionBasicToModification()
+            findNavController().navigate(action)
+        }
+
+        binding.modifyHours.setOnClickListener {
+            val action = RegisterBasicFragmentDirections.actionRegistrationToHours(true)
             findNavController().navigate(action)
         }
     }
@@ -106,7 +173,6 @@ class RegisterBasicFragment : Fragment() {
         recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         recyclerView.adapter = adapter
-        updatePhotoRcvVisibility()
     }
 
     /**
@@ -114,22 +180,29 @@ class RegisterBasicFragment : Fragment() {
      */
     private fun initPhotoRcvAdapter() {
         adapter = PhotoAdapter(
-            photoList,
             onClick = { getImage.launch("image/*") },
             onDelete = {
-                photoList.removeAt(it)
-                adapter.notifyItemRemoved(it)
-                updatePhotoRcvVisibility()
+                val updatedList = registerViewModel.imageItems.value.orEmpty().toMutableList().apply {
+                    removeAt(it)
+                }
+                registerViewModel.setImageList(updatedList)
             }
         )
+    }
+
+    private fun observeCafeInfoImg() {
+        registerViewModel.imageItems.observe(viewLifecycleOwner) { list ->
+            adapter.submitList(list)
+            updatePhotoRcvVisibility(list)
+        }
     }
 
     /**
      * 사진 리사이클러뷰 가시성 제어 함수
      */
-    private fun updatePhotoRcvVisibility() {
-        binding.photoRcv.visibility = if (photoList.isEmpty()) View.GONE else View.VISIBLE
-        binding.uploadPhotoWindow.visibility = if (photoList.isEmpty()) View.VISIBLE else View.GONE
+    private fun updatePhotoRcvVisibility(photos: List<PhotoItem>) {
+        binding.photoRcv.visibility = if (photos.isEmpty()) View.GONE else View.VISIBLE
+        binding.uploadPhotoWindow.visibility = if (photos.isEmpty()) View.VISIBLE else View.GONE
     }
 
     /**

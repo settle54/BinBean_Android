@@ -4,9 +4,13 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.get
 import androidx.core.view.size
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
@@ -14,11 +18,13 @@ import com.binbean.main.databinding.ActivityAdminMainBinding
 import com.binbean.navigation.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AdminMainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAdminMainBinding
     private val INDICATOR_WIDTH_RATIO = 0.7
+    private val viewModel: AdminMainViewModel by viewModels()
 
     // 네비게이션을 숨기는 프래그먼트
     private val hideNavDestinations = setOf(
@@ -67,7 +73,18 @@ class AdminMainActivity : AppCompatActivity() {
 
             // 2. 네비게이션 이동 (백스택 비우기)
             navController.popBackStack(navController.graph.startDestinationId, false)
-            navController.navigate(it.itemId)
+
+            when (it.itemId) {
+                R.id.navi_registration -> {
+                    val id = viewModel.getCafeId()
+                    val target = if (id != -1) R.id.navi_modification else R.id.navi_registration
+                    navController.navigate(target)
+                }
+
+                else -> {
+                    navController.navigate(it.itemId)
+                }
+            }
             true
         }
     }
@@ -121,7 +138,10 @@ class AdminMainActivity : AppCompatActivity() {
     /**
      * 아이템의 크기로 인디케이터의 크기를 계산하는 함수
      */
-    private fun getItemAndIndicatorWidth(nav: BottomNavigationView, itemCount: Int): Pair<Int, Int> {
+    private fun getItemAndIndicatorWidth(
+        nav: BottomNavigationView,
+        itemCount: Int
+    ): Pair<Int, Int> {
         val itemWidth = nav.width / itemCount
         val indicatorWidth = (itemWidth * INDICATOR_WIDTH_RATIO).toInt()
         return Pair(itemWidth, indicatorWidth)

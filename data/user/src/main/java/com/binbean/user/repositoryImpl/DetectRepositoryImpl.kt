@@ -21,13 +21,15 @@ class DetectRepositoryImpl @Inject constructor(
         val gson = Gson()
         val jsonFloor = gson.toJson(request)
             .toRequestBody("application/json".toMediaTypeOrNull())
-        val imagePart = uriToMultipartPart(context, imageUri, "Image", 0)
+        val jsonFNumber = floorNumber.toString()
+            .toRequestBody("application/json".toMediaTypeOrNull())
+        val imagePart = uriToMultipartPart(context, imageUri, "image", 0)
 
         Log.d(TAG, imagePart.toString())
         try {
             val response = detectService.detect(
                 token = token,
-                floorNumber = floorNumber,
+                floorNumber = jsonFNumber,
                 floorList = jsonFloor,
                 image = imagePart
             )

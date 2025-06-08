@@ -1,7 +1,6 @@
 package com.binbean.data.cafe.remote
 
 import com.binbean.domain.FavoriteCafeResponse
-import com.binbean.domain.cafe.Review
 import com.binbean.domain.cafe.CafeDetail
 import com.binbean.domain.cafe.FloorPlanResponse
 import com.binbean.domain.cafe.ReviewPostRequest

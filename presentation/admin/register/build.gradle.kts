@@ -39,6 +39,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":presentation:user:map"))
+    implementation(project(":presentation:user:review"))
+    implementation(project(":domain:admin"))
     implementation(project(":data:admin"))
     implementation(project(":core:navigation"))
     implementation(project(":core:resource"))

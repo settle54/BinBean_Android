@@ -29,8 +29,7 @@
         android:id="@+id/drawingContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_margin="16dp">
+        android:layout_weight="1">
         <com.binbean.ui.CanvasView
             android:id="@+id/canvasView"
             android:layout_width="1000dp"
@@ -77,6 +76,7 @@
             android:layout_weight="0.7"/>
 
         <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnSubmit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"

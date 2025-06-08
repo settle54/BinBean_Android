@@ -7,14 +7,15 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.Log
-import android.view.LayoutInflater
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
+import com.binbean.admin.dto.FloorDetail
+import com.binbean.admin.dto.Position
 import com.binbean.domain.cafe.FloorListDto
-import com.binbean.domain.cafe.FloorPlanResponse
 import com.binbean.domain.cafe.PositionDto
 
 class CanvasView @JvmOverloads constructor(
@@ -33,7 +34,7 @@ class CanvasView @JvmOverloads constructor(
     data class Seat(val x: Float, val y: Float, val isOccupied: Boolean)
     data class Object(val x: Float, val y: Float, val type: ObjectType)
 
-    enum class ObjectType { DOOR, TOILET, COUNTER, WINDOW }
+    enum class ObjectType { SEAT, DOOR, TOILET, COUNTER, WINDOW, TABLE }
 
     enum class Mode {
         USER, ADMIN
@@ -82,7 +83,7 @@ class CanvasView @JvmOverloads constructor(
                     offsetX += dx
                     lastX = event.x
                     invalidate()
-                    // updateObjectTranslation()
+                    updateObjectTranslation()
                 }
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -193,6 +194,8 @@ class CanvasView @JvmOverloads constructor(
                 ObjectType.TOILET -> R.drawable.obj_toilet
                 ObjectType.COUNTER -> R.drawable.obj_casher
                 ObjectType.WINDOW -> R.drawable.obj_window
+                ObjectType.TABLE -> R.drawable.obj_table
+                else -> R.drawable.obj_seat  // 기본값
             }
             val bitmap = getBitmapFromDrawable(resId)
 
@@ -202,7 +205,6 @@ class CanvasView @JvmOverloads constructor(
             canvas.drawBitmap(bitmap, cx, cy, null)
         }
     }
-
 
     private fun getBitmapFromDrawable(resId: Int): android.graphics.Bitmap {
         val drawable = ContextCompat.getDrawable(context, resId)!!
@@ -215,5 +217,97 @@ class CanvasView @JvmOverloads constructor(
         drawable.setBounds(0, 0, canvas.width, canvas.height)
         drawable.draw(canvas)
         return bitmap
+    }
+
+    private fun createInteractiveObjectView(x: Float, y: Float, type: ObjectType): ImageView {
+        val drawableResId = getDrawableResId(type)
+        return ImageView(context).apply {
+            setImageResource(drawableResId)
+            layoutParams = LayoutParams(130, 130).apply {
+                leftMargin = (x * gridSize).toInt()
+                topMargin = (y * gridSize).toInt()
+            }
+            tag = type
+
+            var dX = 0f
+            var dY = 0f
+            val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+                override fun onDoubleTap(e: MotionEvent): Boolean {
+                    (parent as? ViewGroup)?.removeView(this@apply)
+                    return true
+                }
+            })
+
+            setOnTouchListener { v, event ->
+                if (gestureDetector.onTouchEvent(event)) return@setOnTouchListener true
+
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        dX = event.rawX - v.x
+                        dY = event.rawY - v.y
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        val newX = event.rawX - dX
+                        val newY = event.rawY - dY
+                        val params = layoutParams as LayoutParams
+                        params.leftMargin = newX.toInt()
+                        params.topMargin = newY.toInt()
+                        layoutParams = params
+                    }
+                }
+                true
+            }
+        }
+    }
+
+    fun addInteractiveObject(x: Float, y: Float, type: ObjectType) {
+        if (mode != Mode.ADMIN) return  // 관리자일 때만 추가 가능
+        val objectView = createInteractiveObjectView(x, y, type)
+        objectView.tag = type
+        addView(objectView)
+    }
+
+    private fun getDrawableResId(type: ObjectType): Int = when (type) {
+        ObjectType.SEAT -> R.drawable.obj_seat
+        ObjectType.DOOR -> R.drawable.obj_door
+        ObjectType.TOILET -> R.drawable.obj_toilet
+        ObjectType.COUNTER -> R.drawable.obj_casher
+        ObjectType.WINDOW -> R.drawable.obj_window
+        ObjectType.TABLE -> R.drawable.obj_table
+    }
+
+    fun extractObjectsForSave(): FloorDetail {
+        val seatList = mutableListOf<Position>()
+        val doorList = mutableListOf<Position>()
+        val toiletList = mutableListOf<Position>()
+        val windowList = mutableListOf<Position>()
+        val counterList = mutableListOf<Position>()
+        val tableList = mutableListOf<Position>()
+
+        for (i in 0 until childCount) {
+            val view = getChildAt(i) as? ImageView ?: continue
+            val type = view.tag as? CanvasView.ObjectType ?: continue
+            val x = ((view.x + view.width / 2f) / gridSize).toInt()
+            val y = ((view.y + view.height / 2f) / gridSize).toInt()
+            val pos = Position(x, y)
+
+            when (type) {
+                ObjectType.SEAT -> seatList.add(pos)
+                ObjectType.DOOR -> doorList.add(pos)
+                ObjectType.TOILET -> toiletList.add(pos)
+                ObjectType.COUNTER -> counterList.add(pos)
+                ObjectType.WINDOW -> windowList.add(pos)
+                ObjectType.TABLE -> tableList.add(pos)
+            }
+        }
+
+        return FloorDetail(
+            borderPosition = listOf(),
+            seatPosition = seatList,
+            doorPosition = doorList,
+            counterPosition = counterList,
+            toiletPosition = toiletList,
+            windowPosition = windowList
+        )
     }
 }

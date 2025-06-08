@@ -3,8 +3,8 @@ package com.binbean.review
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.binbean.domain.cafe.Review
 import com.binbean.domain.cafe.CafeDetail
+import com.binbean.domain.cafe.Review
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

@@ -1,6 +1,5 @@
 package com.binbean.domain.cafe.usecase
 
-import com.binbean.domain.cafe.Review
 import com.binbean.domain.cafe.ReviewPostRequest
 import com.binbean.domain.cafe.repository.CafeRepository
 import javax.inject.Inject

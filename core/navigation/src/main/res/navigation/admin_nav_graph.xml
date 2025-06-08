@@ -2,7 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/navi_home" >
+    app:startDestination="@id/navi_home">
 
     <fragment
         android:id="@+id/navi_home"
@@ -11,7 +11,7 @@
 
     <fragment
         android:id="@+id/navi_registration"
-        android:name="com.binbean.register.AdminRegisterFragment" >
+        android:name="com.binbean.register.AdminRegisterFragment">
         <action
             android:id="@+id/action_registration_to_basic"
             app:destination="@id/register_basic" />
@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/navi_my"
-        android:name="com.binbean.mypage.MyProfileFragment" >
+        android:name="com.binbean.mypage.MyProfileFragment">
         <action
             android:id="@+id/action_mypage_to_password"
             app:destination="@id/my_page_password" />
@@ -29,28 +29,70 @@
     </fragment>
 
     <fragment
+        android:id="@+id/navi_modification"
+        android:name="com.binbean.register.AdminModifyFragment">
+        <action
+            android:id="@+id/action_modification_to_basic"
+            app:destination="@id/register_basic">
+            <argument
+                android:name="isRegistered"
+                app:argType="boolean" />
+        </action>
+    </fragment>
+
+    <fragment
         android:id="@+id/register_basic"
-        android:name="com.binbean.register.RegisterBasicFragment" >
+        android:name="com.binbean.register.RegisterBasicFragment">
         <action
             android:id="@+id/action_registration_to_hours"
-            app:destination="@id/register_hours" />
+            app:destination="@id/register_hours">
+            <argument
+                android:name="isRegistered"
+                app:argType="boolean" />
+        </action>
+        <action
+            android:id="@+id/action_basic_to_modification"
+            app:destination="@id/navi_modification" />
+
+        <argument
+            android:name="isRegistered"
+            android:defaultValue="false"
+            app:argType="boolean" />
     </fragment>
 
     <fragment
         android:id="@+id/register_hours"
-        android:name="com.binbean.register.RegisterHoursFragment" >
+        android:name="com.binbean.register.RegisterHoursFragment">
         <action
             android:id="@+id/action_registration_to_drawing"
-            app:destination="@id/register_drawing" />
+            app:destination="@id/register_drawing">
+            <argument
+                android:name="isRegistered"
+                app:argType="boolean" />
+        </action>
+        <action
+            android:id="@+id/action_hours_to_modification"
+            app:destination="@id/navi_modification" />
+
+        <argument
+            android:name="isRegistered"
+            android:defaultValue="false"
+            app:argType="boolean" />
     </fragment>
 
     <fragment
         android:id="@+id/register_drawing"
-        android:name="com.binbean.register.RegisterDrawingFragment" />
+        android:name="com.binbean.register.RegisterDrawingFragment">
+
+        <argument
+            android:name="isRegistered"
+            android:defaultValue="false"
+            app:argType="boolean" />
+    </fragment>
 
     <fragment
         android:id="@+id/my_page_password"
-        android:name="com.binbean.mypage.ChangePwFragment" >
+        android:name="com.binbean.mypage.ChangePwFragment">
         <action
             android:id="@+id/action_mypage_to_profile"
             app:destination="@id/navi_my" />

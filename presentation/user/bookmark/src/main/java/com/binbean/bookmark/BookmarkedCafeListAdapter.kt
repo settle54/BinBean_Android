@@ -3,13 +3,11 @@ package com.binbean.bookmark
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.binbean.domain.FavoriteCafeResponse
-import com.binbean.domain.cafe.Cafe
 
 class BookmarkedCafeListAdapter: ListAdapter<FavoriteCafeResponse, BookmarkedCafeListAdapter.BookmarkedCafeViewHolder>(DiffCallback()) {
 

@@ -1,6 +1,5 @@
 package com.binbean.domain.cafe
 
-import java.io.Serial
 import java.io.Serializable
 
 data class FloorPlanResponse(

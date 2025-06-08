@@ -179,6 +179,7 @@
                     android:fontFamily="@font/pretendard_regular"
                     android:hint="@string/eg_phone_number"
                     android:imeOptions="actionDone"
+                    android:inputType="phone"
                     android:maxLines="1"
                     android:padding="12dp"
                     android:singleLine="true"
@@ -552,7 +553,7 @@
                 tools:visibility="gone" />
 
             <LinearLayout
-                android:id="@+id/modfiy_tool"
+                android:id="@+id/modifiy_tool"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="35dp"

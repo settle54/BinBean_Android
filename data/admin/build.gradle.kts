@@ -53,6 +53,7 @@ android {
 
 dependencies {
 
+    implementation(project(":domain"))
     implementation(project(":core:util"))
     implementation(project(":core:retrofit"))
     implementation(libs.androidx.core.ktx)

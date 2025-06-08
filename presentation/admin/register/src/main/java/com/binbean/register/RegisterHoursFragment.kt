@@ -11,16 +11,16 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
+import com.binbean.admin.model.DayTime
 import com.binbean.register.databinding.FragmentRegisterHoursBinding
 import dagger.hilt.android.AndroidEntryPoint
-
-
-data class DayTime(val start: String?, val end: String?)
 
 @AndroidEntryPoint
 class RegisterHoursFragment : Fragment() {
     private lateinit var binding: FragmentRegisterHoursBinding
-    private val viewModel: CafeRegisterViewModel by activityViewModels()
+    private val registerViewModel: CafeRegisterViewModel by activityViewModels()
+    private val modifyViewModel: CafeModifyViewModel by activityViewModels()
     private lateinit var weekTimeList: List<DayTime>
 
     override fun onCreateView(
@@ -34,14 +34,44 @@ class RegisterHoursFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setHours()
+        val args: RegisterBasicFragmentArgs by navArgs()
+        val isRegistered = args.isRegistered
 
+        if (isRegistered) {
+            binding.title.setText(R.string.modify_business_hours)
+            binding.modifyTool.visibility = View.VISIBLE
+            binding.registerButton.visibility = View.GONE
+            setCafeDetailHours()
+        }
+
+        setHours()
+        setClickListeners()
+    }
+
+    private fun setCafeDetailHours() {
+        // TODO: 서버에서 요일마다 시간을 가져와서 설정하기
+    }
+
+    /**
+     * 클릭리스너 설정 함수
+     */
+    private fun setClickListeners() {
         binding.registerButton.setOnClickListener {
             makeWeekTimeList()
             Log.d(TAG, weekTimeList.joinToString(","))
-            viewModel.setWeekTimes(weekTimeList)
-            viewModel.registerCafe(requireContext())
-            val action = RegisterHoursFragmentDirections.actionRegistrationToDrawing()
+            registerViewModel.setWeekTimes(weekTimeList)
+            // viewModel.registerCafe(requireContext())
+            val action = RegisterHoursFragmentDirections.actionRegistrationToDrawing(false)
+            findNavController().navigate(action)
+        }
+
+        binding.modifyComplete.setOnClickListener {
+            val action = RegisterHoursFragmentDirections.actionHoursToModification()
+            findNavController().navigate(action)
+        }
+
+        binding.modifyFloor.setOnClickListener {
+            val action = RegisterHoursFragmentDirections.actionRegistrationToDrawing(true)
             findNavController().navigate(action)
         }
     }

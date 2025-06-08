@@ -20,7 +20,7 @@ class ObjectListAdapter: ListAdapter<ObjectItem, ObjectListAdapter.ObjectViewHol
                 itemIcon.setOnLongClickListener {
                     val clip = ClipData.newPlainText("type", item.type)
                     val shadow = DragShadowBuilder(binding.itemIcon)
-                    it.startDragAndDrop(clip, shadow, null, 0)
+                    it.startDragAndDrop(clip, shadow, it, 0)
                     true
                 }
             }

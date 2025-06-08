@@ -1,7 +1,6 @@
 package com.binbean.domain.cafe.repository
 
 import com.binbean.domain.FavoriteCafeResponse
-import com.binbean.domain.cafe.Review
 import com.binbean.domain.cafe.Cafe
 import com.binbean.domain.cafe.CafeDetail
 import com.binbean.domain.cafe.FloorPlanResponse

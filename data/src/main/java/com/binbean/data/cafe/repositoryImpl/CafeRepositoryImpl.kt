@@ -6,7 +6,6 @@ import com.binbean.data.cafe.remote.CafeRetrofitServerService
 import com.binbean.data.cafe.remote.CafeRetrofitService
 import com.binbean.data.cafe.toCafe
 import com.binbean.domain.FavoriteCafeResponse
-import com.binbean.domain.cafe.Review
 import com.binbean.domain.cafe.Cafe
 import com.binbean.domain.cafe.CafeDetail
 import com.binbean.domain.cafe.FloorPlanResponse
