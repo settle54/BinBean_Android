@@ -12,6 +12,7 @@ import com.binbean.domain.cafe.FloorPlanResponse
 import com.binbean.domain.cafe.usecase.GetCafeDetailUseCase
 import com.binbean.domain.cafe.usecase.GetFloorPlanUseCase
 import com.binbean.user.dto.DetectRequest
+import com.binbean.user.dto.DetectResponse
 import com.binbean.user.dto.Position
 import com.binbean.user.repositoryImpl.DetectRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,26 +32,24 @@ class CafeDrawingViewModel @Inject constructor(
     private val _floorPlans = MutableLiveData<List<FloorPlanResponse>>()
     val floorPlans: LiveData<List<FloorPlanResponse>> = _floorPlans
 
+    private val _detectResult = MutableLiveData<DetectResponse>()
+    val detectResult: LiveData<DetectResponse> = _detectResult
+
     // 더미 리퀘스트
-    private val request = DetectRequest(
-        borderPosition = listOf(Position(0, 0), Position(10, 0)),
-        seatPosition = listOf(
-            Position(3, 123), Position(65, 28), Position(92, 180),
-            Position(152, 101), Position(134, 216), Position(189, 138),
-            Position(242, 289), Position(304, 213), Position(342, 462)
-        ),
-        doorPosition = listOf(Position(0, 5)),
-        counterPosition = listOf(Position(5, 1)),
-        toiletPosition = listOf(Position(8, 6)),
-        windowPosition = listOf(Position(1, 0))
-    )
 
     // 더미 플로어 넘버
-    private val floorNumber = 2
+    private val floorNumber = 1
 
-    fun detect(context: Context, imageUri: Uri) {
+    fun detect(context: Context, request: DetectRequest, imageUri: Uri) {
         viewModelScope.launch {
-            detectRepository.detect(context, floorNumber, request, imageUri)
+            try {
+                val response = detectRepository.detect(context, floorNumber, request, imageUri)
+                response?.let {
+                    _detectResult.value = it
+                }
+            } catch (e: Exception) {
+                Log.e("CafeDrawingVM", "도면 감지 실패", e)
+            }
         }
     }
 
@@ -70,6 +69,7 @@ class CafeDrawingViewModel @Inject constructor(
             try {
                 val plans = getFloorPlanUseCase(floorPlanId)
                 _floorPlans.value = plans
+                Log.d("CafeDrawingVM", plans.toString())
             } catch (e: Exception) {
                 Log.e("CafeDrawingVM", "도면 조회 실패", e)
             }

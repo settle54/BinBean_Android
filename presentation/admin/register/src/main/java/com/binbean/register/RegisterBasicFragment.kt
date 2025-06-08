@@ -119,8 +119,8 @@ class RegisterBasicFragment : Fragment() {
         baseRequest = CafeRegisterRequest(
             cafeName = binding.tradeWindow.text.toString(),
             cafeAddress = binding.addressWindow.text.toString(),
-            latitude = 37.874715,
-            longitude = 127.744192,
+            latitude = 37.870618,
+            longitude = 127.744452,
             cafePhone = binding.phoneWindow.text.toString(),
             wifiAvailable = binding.radioWifi.getSelectedTagValueAsInt(),
             chargerAvailable = binding.radioCharging.getSelectedTagValueAsInt(),

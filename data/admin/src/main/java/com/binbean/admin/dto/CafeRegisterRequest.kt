@@ -2,7 +2,7 @@ package com.binbean.admin.dto
 
 import com.google.gson.annotations.SerializedName
 
-data class Position(val x: Int, val y: Int)
+data class Position(val x: Float, val y: Float)
 
 data class FloorWrapper(
     @SerializedName("floorList")

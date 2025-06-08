@@ -1,6 +1,6 @@
 package com.binbean.user.dto
 
-data class Position(val x: Int, val y: Int)
+data class Position(val x: Float, val y: Float)
 
 data class DetectRequest(
     val borderPosition: List<Position>,

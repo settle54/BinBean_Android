@@ -287,8 +287,8 @@ class CanvasView @JvmOverloads constructor(
         for (i in 0 until childCount) {
             val view = getChildAt(i) as? ImageView ?: continue
             val type = view.tag as? CanvasView.ObjectType ?: continue
-            val x = ((view.x + view.width / 2f) / gridSize).toInt()
-            val y = ((view.y + view.height / 2f) / gridSize).toInt()
+            val x = ((view.x + view.width / 2f) / gridSize)
+            val y = ((view.y + view.height / 2f) / gridSize)
             val pos = Position(x, y)
 
             when (type) {
